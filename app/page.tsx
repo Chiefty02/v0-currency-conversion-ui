@@ -19,6 +19,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
 import { Sidebar } from "@/components/sidebar"
 import { useState, useEffect, useRef } from "react"
+import { P2PTradingInterface } from "@/components/p2p-trading"
 
 const chartData = [
   { x: 0, value: 200 },
@@ -864,6 +865,8 @@ export default function TradingDashboard() {
             </div>
           ) : activeSection === "wallet" ? (
             <WalletInterface />
+          ) : activeSection === "trading" ? (
+            <P2PTradingInterface />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Balance Card */}
