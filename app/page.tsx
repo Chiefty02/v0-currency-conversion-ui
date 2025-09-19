@@ -20,6 +20,8 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
 import { Sidebar } from "@/components/sidebar"
 import { useState, useEffect, useRef } from "react"
 import { P2PTradingInterface } from "@/components/p2p-trading"
+import { TransactionHistory } from "@/components/transaction-history"
+import { ContactUs } from "@/components/contact-us"
 
 const chartData = [
   { x: 0, value: 200 },
@@ -652,7 +654,7 @@ export default function TradingDashboard() {
               size="sm"
               className="text-gray-400 hover:text-white"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 mr-1" />
             </Button>
           </div>
         </div>
@@ -773,6 +775,20 @@ export default function TradingDashboard() {
     )
   }
 
+  const handleNavigateToWallet = (crypto: string) => {
+    setActiveSection("wallet")
+    // Find and select the crypto asset
+    const asset = cryptoAssets.find((c) => c.code === crypto)
+    if (asset) {
+      setSelectedCrypto(asset)
+    }
+  }
+
+  const handleNavigateToTrade = (tradeId: string) => {
+    setActiveSection("trading")
+    // Could implement specific trade navigation logic here
+  }
+
   return (
     <div className="min-h-screen bg-[#363636] flex">
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
@@ -867,6 +883,10 @@ export default function TradingDashboard() {
             <WalletInterface />
           ) : activeSection === "trading" ? (
             <P2PTradingInterface />
+          ) : activeSection === "transaction history" ? (
+            <TransactionHistory onNavigateToWallet={handleNavigateToWallet} onNavigateToTrade={handleNavigateToTrade} />
+          ) : activeSection === "contact us" ? (
+            <ContactUs />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Balance Card */}

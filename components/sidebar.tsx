@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Wallet, TrendingUp, Settings, MessageCircle, LogOut, Menu, X } from "lucide-react"
+import { LayoutDashboard, Wallet, TrendingUp, Settings, MessageCircle, LogOut, Menu, X, History } from "lucide-react"
 import { useState } from "react"
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
     { icon: LayoutDashboard, label: "Dashboard", active: true },
     { icon: Wallet, label: "Wallet", active: false },
     { icon: TrendingUp, label: "Trading", active: false },
+    { icon: History, label: "Transaction History", active: false },
     { icon: Settings, label: "Settings", active: false },
     { icon: MessageCircle, label: "Contact us", active: false },
   ]
