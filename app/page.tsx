@@ -15,6 +15,8 @@ import {
   Download,
   Check,
   ArrowLeft,
+  User,
+  LogOut,
 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts"
 import { Sidebar } from "@/components/sidebar"
@@ -22,6 +24,10 @@ import { useState, useEffect, useRef } from "react"
 import { P2PTradingInterface } from "@/components/p2p-trading"
 import { TransactionHistory } from "@/components/transaction-history"
 import { ContactUs } from "@/components/contact-us"
+import { Settings } from "@/components/settings"
+import { useAuth } from "@/contexts/auth-context"
+import { AuthGuard } from "@/components/auth/auth-guard"
+import { AuthPage } from "@/components/auth/auth-page"
 
 const chartData = [
   { x: 0, value: 200 },
@@ -436,6 +442,9 @@ const WithdrawInterface = ({
 )
 
 export default function TradingDashboard() {
+  const { user, isAuthenticated, logout, login } = useAuth()
+  const [showAuthPage, setShowAuthPage] = useState(false)
+
   const [selectedCurrency, setSelectedCurrency] = useState(currencies[0])
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false)
   const [selectedCrypto, setSelectedCrypto] = useState(cryptoAssets[0])
@@ -463,6 +472,26 @@ export default function TradingDashboard() {
   const cryptoDropdownRef = useRef<HTMLDivElement>(null)
   const fromDropdownRef = useRef<HTMLDivElement>(null)
   const toDropdownRef = useRef<HTMLDivElement>(null)
+
+  const handleSectionChange = (section: string) => {
+    const protectedSections = ["wallet", "trading", "transaction history", "settings"]
+
+    if (protectedSections.includes(section) && !isAuthenticated) {
+      setShowAuthPage(true)
+      return
+    }
+
+    setActiveSection(section)
+  }
+
+  const handleAuthSuccess = (userData: any) => {
+    login(userData)
+    setShowAuthPage(false)
+    // Navigate to the intended section after auth
+    if (["wallet", "trading", "transaction history", "settings"].includes(activeSection)) {
+      // Section will be set after auth
+    }
+  }
 
   const calculateBalance = () => {
     const cryptoUsdValue = selectedCrypto.balance * selectedCrypto.usdValue
@@ -540,28 +569,6 @@ export default function TradingDashboard() {
     link.href = canvas.toDataURL()
     link.click()
   }
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
-        setIsCurrencyDropdownOpen(false)
-      }
-      if (cryptoDropdownRef.current && !cryptoDropdownRef.current.contains(event.target as Node)) {
-        setIsCryptoDropdownOpen(false)
-      }
-      if (fromDropdownRef.current && !fromDropdownRef.current.contains(event.target as Node)) {
-        setIsFromDropdownOpen(false)
-      }
-      if (toDropdownRef.current && !toDropdownRef.current.contains(event.target as Node)) {
-        setIsToDropdownOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
 
   const handleWithdrawClick = (crypto: (typeof cryptoAssets)[0]) => {
     setWithdrawCrypto(crypto)
@@ -789,11 +796,63 @@ export default function TradingDashboard() {
     // Could implement specific trade navigation logic here
   }
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
+        setIsCurrencyDropdownOpen(false)
+      }
+      if (cryptoDropdownRef.current && !cryptoDropdownRef.current.contains(event.target as Node)) {
+        setIsCryptoDropdownOpen(false)
+      }
+      if (fromDropdownRef.current && !fromDropdownRef.current.contains(event.target as Node)) {
+        setIsFromDropdownOpen(false)
+      }
+      if (toDropdownRef.current && !toDropdownRef.current.contains(event.target as Node)) {
+        setIsToDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  if (showAuthPage) {
+    return <AuthPage onBack={() => setShowAuthPage(false)} onAuthSuccess={handleAuthSuccess} />
+  }
+
   return (
     <div className="min-h-screen bg-[#363636] flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Sidebar
+        activeSection={activeSection}
+        onSectionChange={handleSectionChange}
+        user={user}
+        onLogout={logout}
+        onShowAuth={() => setShowAuthPage(true)}
+      />
       <div className="flex-1 lg:ml-0 p-6">
         <div className="max-w-7xl mx-auto">
+          {isAuthenticated && (
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Welcome back, {user?.name}</p>
+                  <p className="text-xs text-gray-400">
+                    {user?.authType === "wallet" ? `${user?.walletType} Connected` : "Email Account"}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={logout} className="text-gray-400 hover:text-white">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          )}
+
           {showWithdrawInterface ? (
             <WithdrawInterface
               withdrawCrypto={withdrawCrypto}
@@ -880,13 +939,27 @@ export default function TradingDashboard() {
               )}
             </div>
           ) : activeSection === "wallet" ? (
-            <WalletInterface />
+            <AuthGuard message="Please sign in to access your wallet" onAuthRequired={() => setShowAuthPage(true)}>
+              <WalletInterface />
+            </AuthGuard>
           ) : activeSection === "trading" ? (
-            <P2PTradingInterface />
+            <AuthGuard message="Please sign in to start trading" onAuthRequired={() => setShowAuthPage(true)}>
+              <P2PTradingInterface />
+            </AuthGuard>
           ) : activeSection === "transaction history" ? (
-            <TransactionHistory onNavigateToWallet={handleNavigateToWallet} onNavigateToTrade={handleNavigateToTrade} />
+            <AuthGuard
+              message="Please sign in to view your transaction history"
+              onAuthRequired={() => setShowAuthPage(true)}
+            >
+              <TransactionHistory
+                onNavigateToWallet={handleNavigateToWallet}
+                onNavigateToTrade={handleNavigateToTrade}
+              />
+            </AuthGuard>
           ) : activeSection === "contact us" ? (
             <ContactUs />
+          ) : activeSection === "settings" ? (
+            <Settings />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Balance Card */}

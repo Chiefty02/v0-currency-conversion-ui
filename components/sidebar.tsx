@@ -1,25 +1,49 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Wallet, TrendingUp, Settings, MessageCircle, LogOut, Menu, X, History } from "lucide-react"
+import {
+  LayoutDashboard,
+  Wallet,
+  TrendingUp,
+  Settings,
+  MessageCircle,
+  LogOut,
+  Menu,
+  X,
+  History,
+  User,
+  Shield,
+} from "lucide-react"
 import { useState } from "react"
 
 interface SidebarProps {
   activeSection: string
   onSectionChange: (section: string) => void
+  user?: any
+  onLogout?: () => void
+  onShowAuth?: () => void
 }
 
-export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+export function Sidebar({ activeSection, onSectionChange, user, onLogout, onShowAuth }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const navigationItems = [
-    { icon: LayoutDashboard, label: "Dashboard", active: true },
-    { icon: Wallet, label: "Wallet", active: false },
-    { icon: TrendingUp, label: "Trading", active: false },
-    { icon: History, label: "Transaction History", active: false },
-    { icon: Settings, label: "Settings", active: false },
-    { icon: MessageCircle, label: "Contact us", active: false },
+    { icon: LayoutDashboard, label: "Dashboard", active: true, requiresAuth: false },
+    { icon: Wallet, label: "Wallet", active: false, requiresAuth: true },
+    { icon: TrendingUp, label: "Trading", active: false, requiresAuth: true },
+    { icon: History, label: "Transaction History", active: false, requiresAuth: true },
+    { icon: Settings, label: "Settings", active: false, requiresAuth: false },
+    { icon: MessageCircle, label: "Contact us", active: false, requiresAuth: false },
   ]
+
+  const handleSectionClick = (item: any) => {
+    if (item.requiresAuth && !user) {
+      onShowAuth?.()
+      return
+    }
+    onSectionChange(item.label.toLowerCase())
+    setIsOpen(false)
+  }
 
   return (
     <>
@@ -48,7 +72,20 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Logo/Brand */}
           <div className="p-6 border-b border-[#5d5b5b]">
-            <h1 className="text-[#fbc108] text-2xl font-bold">Tyrion</h1>
+            <h1 className="text-[#fbc108] text-2xl font-bold">CryptoExchange</h1>
+            {user && (
+              <div className="mt-3 flex items-center space-x-2">
+                <div className="h-6 w-6 rounded-full bg-[#fbc108] flex items-center justify-center">
+                  <User className="h-3 w-3 text-black" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-white truncate">{user.name}</p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {user.authType === "wallet" ? user.walletType : "Email"}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -56,43 +93,59 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             {navigationItems.map((item) => {
               const Icon = item.icon
               const isActive = activeSection === item.label.toLowerCase()
+              const isLocked = item.requiresAuth && !user
+
               return (
                 <Button
                   key={item.label}
                   variant="ghost"
                   className={`
-                    w-full justify-start gap-3 h-12 rounded-lg
+                    w-full justify-start gap-3 h-12 rounded-lg relative
                     ${
                       isActive
                         ? "bg-[#fbc108] text-black hover:bg-[#fbc108]/90"
-                        : "text-[#bbbbbb] hover:text-white hover:bg-[#5d5b5b]"
+                        : isLocked
+                          ? "text-[#888888] hover:text-[#bbbbbb] hover:bg-[#3a3a3a]"
+                          : "text-[#bbbbbb] hover:text-white hover:bg-[#5d5b5b]"
                     }
                   `}
-                  onClick={() => {
-                    onSectionChange(item.label.toLowerCase())
-                    setIsOpen(false)
-                  }}
+                  onClick={() => handleSectionClick(item)}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
+                  {isLocked && <Shield className="w-3 h-3 ml-auto text-[#888888]" />}
                 </Button>
               )
             })}
           </nav>
 
-          {/* Logout */}
+          {/* Auth Section */}
           <div className="p-4 border-t border-[#5d5b5b]">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 h-12 rounded-lg text-[#bbbbbb] hover:text-white hover:bg-[#5d5b5b]"
-              onClick={() => {
-                onSectionChange("logout")
-                setIsOpen(false)
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Log out</span>
-            </Button>
+            {user ? (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-12 rounded-lg text-[#bbbbbb] hover:text-white hover:bg-[#5d5b5b]"
+                onClick={() => {
+                  onLogout?.()
+                  setIsOpen(false)
+                }}
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Sign Out</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-12 rounded-lg text-[#fbc108] hover:text-[#fbc108]/80 hover:bg-[#5d5b5b] border border-[#fbc108]/30"
+                onClick={() => {
+                  onShowAuth?.()
+                  setIsOpen(false)
+                }}
+              >
+                <User className="w-5 h-5" />
+                <span className="font-medium">Sign In</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
