@@ -40,7 +40,7 @@ export function ContactUs() {
           <div className="text-center mb-6">
             <div className="w-24 h-24 mx-auto mb-4 bg-[#fbc108] rounded-full flex items-center justify-center">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-TGrfv6jF61CB4cnlNK5PxaOItDPVNy.png"
+                src="/images/design-mode/image.png"
                 alt="Contact illustration"
                 className="w-16 h-16 object-contain"
               />

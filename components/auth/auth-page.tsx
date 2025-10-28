@@ -55,7 +55,7 @@ export function AuthPage({ onBack, onAuthSuccess }: AuthPageProps) {
   }
 
   return (
-    <div className="min-h-screen auth-gradient flex items-center justify-center p-4">
+    <div className="min-h-screen auth-gradient flex justify-center p-4 items-end">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -74,8 +74,8 @@ export function AuthPage({ onBack, onAuthSuccess }: AuthPageProps) {
               <Zap className="h-6 w-6 text-primary-foreground" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome to CryptoExchange</h1>
-          <p className="text-muted-foreground mt-2">Trade crypto and gift cards with confidence</p>
+          <h1 className="text-2xl font-bold text-foreground">{"Welcome to TYRION\n"} </h1>
+          <p className="text-muted-foreground mt-2">Trade crypto and gift cards with TRUST </p>
         </div>
 
         <Card className="border-border/50 shadow-lg">

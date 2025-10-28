@@ -72,7 +72,7 @@ export function Sidebar({ activeSection, onSectionChange, user, onLogout, onShow
         <div className="flex flex-col h-full">
           {/* Logo/Brand */}
           <div className="p-6 border-b border-[#5d5b5b]">
-            <h1 className="text-[#fbc108] text-2xl font-bold">CryptoExchange</h1>
+            <h1 className="text-[#fbc108] text-2xl font-bold font-sans">{"TYRION"}</h1>
             {user && (
               <div className="mt-3 flex items-center space-x-2">
                 <div className="h-6 w-6 rounded-full bg-[#fbc108] flex items-center justify-center">
